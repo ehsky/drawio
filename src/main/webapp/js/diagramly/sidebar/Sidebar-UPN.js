@@ -68,12 +68,12 @@
         var edge = new mxCell(
           "WHY does it happen?",
           new mxGeometry(0, 0, 0, 0),
-          "shape=mxgraph.upn.flowLine;endArrow=blockThin;endFill=1;html=1;fontSize=11;isTerminated=0;",
+          "shape=mxgraph.upn.flowLine;endArrow=blockThin;endFill=1;html=1;fontSize=11;isTerminated=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;",
         );
-        edge.geometry.setTerminalPoint(new mxPoint(w, h / 2), true);
         edge.geometry.setTerminalPoint(new mxPoint(w + 160, h / 2), false);
         edge.geometry.relative = true;
         edge.edge = true;
+        edge.setTerminal(activity, true);
 
         return sb.createVertexTemplateFromCells(
           [activity, edge],
@@ -202,47 +202,7 @@
     }
 
     // =========================================================================
-    // 1. SHAPE REFRESH: Force UPN shapes to redraw when links change
-    // =========================================================================
-    // The core issue: mxCellRenderer.isShapeInvalid only checks
-    // bounds/scale/points. When a link is added (value change), the shape
-    // geometry doesn't change, so the drill-down indicator is never painted.
-    // Fix: intercept graphModelChanged to clear shape.bounds on UPN cells
-    // whose values changed, forcing isShapeInvalid to return true.
-    var origGraphModelChanged = graph.graphModelChanged;
-
-    graph.graphModelChanged = function (changes) {
-      if (changes != null) {
-        for (var i = 0; i < changes.length; i++) {
-          var change = changes[i];
-
-          // Detect value changes (mxValueChange has .value and .previous)
-          if (
-            change != null &&
-            change.cell != null &&
-            "value" in change &&
-            "previous" in change
-          ) {
-            // Find the UPN Activity parent of the changed cell
-            var upnCell = findUPNActivityParent(change.cell);
-
-            if (upnCell != null) {
-              var state = graph.view.getState(upnCell);
-
-              if (state != null && state.shape != null) {
-                // Clear bounds to force isShapeInvalid → true → repaint
-                state.shape.bounds = null;
-              }
-            }
-          }
-        }
-      }
-
-      origGraphModelChanged.apply(this, arguments);
-    };
-
-    // =========================================================================
-    // 2. DOUBLE-CLICK DRILL-DOWN: Navigate to linked sub-process page
+    // 1. DOUBLE-CLICK DRILL-DOWN: Navigate to linked sub-process page
     // =========================================================================
     graph.addListener(mxEvent.DOUBLE_CLICK, function (sender, evt) {
       if (evt.isConsumed()) return;
@@ -283,7 +243,7 @@
     });
 
     // =========================================================================
-    // 3. BREADCRUMB TRAIL: Visual navigation bar for process hierarchy
+    // 2. BREADCRUMB TRAIL: Visual navigation bar for process hierarchy
     // =========================================================================
     var breadcrumbContainer = null;
 
@@ -421,34 +381,16 @@
     }
 
     // =========================================================================
-    // 4. CLEAR NAV STACK on manual page changes (tab clicks)
+    // 3. CLEAR NAV STACK on manual page changes (tab clicks)
     // =========================================================================
-    // When the user manually switches pages via the page tabs (not via
-    // drill-down), reset the navigation stack to avoid confusion.
     ui.editor.addListener("pageSelected", function () {
-      // Only clear if the page change wasn't triggered by our drill-down
-      // We detect this by checking if the current page matches what
-      // the stack expects (top of stack + 1 child)
       if (navStack.length > 0) {
-        var expectedParent = navStack[navStack.length - 1];
-        // If user navigates to a page that isn't the expected child,
-        // and isn't in the nav stack, reset the trail
-        var isInStack = false;
-
-        for (var i = 0; i < navStack.length; i++) {
-          if (navStack[i].pageId === ui.currentPage.getId()) {
-            isInStack = true;
-            break;
-          }
-        }
-
-        // Keep the breadcrumb visible so users can navigate back
         updateBreadcrumb();
       }
     });
 
     // =========================================================================
-    // 5. KEYBOARD SHORTCUT: Escape to go back up
+    // 4. KEYBOARD SHORTCUT: Escape to go back up
     // =========================================================================
     mxEvent.addListener(document, "keydown", function (e) {
       // Alt+Up arrow or Backspace (when not editing) to go back
