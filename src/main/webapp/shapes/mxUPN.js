@@ -153,6 +153,62 @@ mxUtils.extend(mxShapeUPNFlowLine, mxConnector);
 
 mxShapeUPNFlowLine.prototype.cst = { FLOW_LINE: "mxgraph.upn.flowLine" };
 
+mxShapeUPNFlowLine.prototype.customProperties = [
+  {
+    name: "isTerminated",
+    dispName: "Is Terminated",
+    type: "bool",
+    defVal: false,
+  },
+];
+
+/**
+ * Paints the edge shape, adding a ❌ terminator symbol when isTerminated is enabled.
+ */
+mxShapeUPNFlowLine.prototype.paintEdgeShape = function (c, pts, rounded) {
+  mxConnector.prototype.paintEdgeShape.apply(this, arguments);
+
+  var isTerminated = mxUtils.getValue(this.style, "isTerminated", false);
+
+  if (isTerminated == "1" || isTerminated === true) {
+    if (pts.length >= 2) {
+      var lastPt = pts[pts.length - 1];
+      var secondLastPt = pts[pts.length - 2];
+
+      var dx = lastPt.x - secondLastPt.x;
+      var dy = lastPt.y - secondLastPt.y;
+      var length = Math.sqrt(dx * dx + dy * dy);
+
+      if (length > 0) {
+        dx /= length;
+        dy /= length;
+      }
+
+      var offsetDistance = 20;
+      var x = lastPt.x + dx * offsetDistance;
+      var y = lastPt.y + dy * offsetDistance;
+
+      // White circle background
+      var symbolSize = 16;
+      c.setFillColor("#ffffff");
+      c.setStrokeColor("#d32f2f");
+      c.setStrokeWidth(2);
+      c.ellipse(x - symbolSize / 2, y - symbolSize / 2, symbolSize, symbolSize);
+      c.fillAndStroke();
+
+      // ❌ cross
+      var crossSize = 6;
+      c.begin();
+      c.moveTo(x - crossSize / 2, y - crossSize / 2);
+      c.lineTo(x + crossSize / 2, y + crossSize / 2);
+      c.moveTo(x + crossSize / 2, y - crossSize / 2);
+      c.lineTo(x - crossSize / 2, y + crossSize / 2);
+      c.end();
+      c.stroke();
+    }
+  }
+};
+
 mxCellRenderer.registerShape(
   mxShapeUPNFlowLine.prototype.cst.FLOW_LINE,
   mxShapeUPNFlowLine,

@@ -11,9 +11,9 @@
 
     // Shared child-row styles
     var resourceRowStyle =
-      "shape=mxgraph.upn.resource;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;spacingLeft=4;spacingRight=100;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;";
+      "shape=mxgraph.upn.resource;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;spacingLeft=4;spacingRight=100;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;connectable=0;";
     var systemRowStyle =
-      "text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;fontStyle=2;";
+      "text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;fontStyle=2;connectable=0;";
 
     // Helper to create an Activity Box cell hierarchy (standard swimlane + child rows)
     function createActivityBox(w, h) {
@@ -29,7 +29,7 @@
         "treeFolding=1;treeMoving=1;";
 
       var parent = new mxCell(
-        "WHAT happens<br>(start with verb in base form)",
+        "WHAT happens<br><i>(start with verb in base form)</i>",
         new mxGeometry(0, 0, w, h),
         parentStyle,
       );
