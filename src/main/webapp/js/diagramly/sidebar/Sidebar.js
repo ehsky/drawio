@@ -1098,6 +1098,7 @@
 		this.addArchimate3Palette();
 		this.addArchiMatePalette();
 		this.addBpmn2Palette();
+		this.addUPNPalette();
 		this.addSysMLPalette(sysml, dir);
 		this.addLeanMappingPalette();
 		this.addCabinetsPalette();

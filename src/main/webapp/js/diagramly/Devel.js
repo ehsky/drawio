@@ -180,6 +180,7 @@ mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-Sitemap.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-Sysml.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-ThreatModeling.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-UML25.js');
+mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-UPN.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-Veeam.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-Veeam2.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-VVD.js');
