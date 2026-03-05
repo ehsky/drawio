@@ -228,6 +228,7 @@ OUTPUT FILES (in src/main/webapp/js/):
 				<file name="Sidebar-Sysml.js" />
 				<file name="Sidebar-ThreatModeling.js" />
 				<file name="Sidebar-UML25.js" />
+				<file name="Sidebar-UPN.js" />
 				<file name="Sidebar-Veeam.js" />
 				<file name="Sidebar-Veeam2.js" />
 				<file name="Sidebar-VVD.js" />
