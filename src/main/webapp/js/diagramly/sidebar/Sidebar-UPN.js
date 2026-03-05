@@ -2,116 +2,463 @@
  * Copyright (c) 2020-2025, JGraph Holdings Ltd
  * Copyright (c) 2020-2025, draw.io AG
  */
-(function()
-{
-	// Adds UPN (Universal Process Notation) shapes
-	Sidebar.prototype.addUPNPalette = function()
-	{
-		var sb = this;
-		var dt = 'upn universal process notation ';
-		this.setCurrentSearchEntryLibrary('upn');
+(function () {
+  // Adds UPN (Universal Process Notation) shapes
+  Sidebar.prototype.addUPNPalette = function () {
+    var sb = this;
+    var dt = "upn universal process notation ";
+    this.setCurrentSearchEntryLibrary("upn");
 
-		// Shared styles
-		var sectionHeaderStyle = 'text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=1;fontSize=11;whiteSpace=wrap;';
-		var rowStyle = 'text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;';
-		var dividerStyle = 'line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;';
+    // Shared child-row styles
+    var resourceRowStyle =
+      "shape=mxgraph.upn.resource;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;spacingLeft=4;spacingRight=100;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;";
+    var systemRowStyle =
+      "text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;fontStyle=2;";
 
-		// Color variants: [fillColor, strokeColor, label suffix]
-		var variants = [
-			['#dae8fc', '#6c8ebf', 'Default', 'default'],
-			['#f8cecc', '#b85450', 'Exception', 'exception'],
-			['#d5e8d4', '#82b366', 'Automated', 'automated'],
-			['#f5f5f5', '#666666', 'Manual', 'manual']
-		];
+    // Helper to create an Activity Box cell hierarchy (standard swimlane + child rows)
+    function createActivityBox(w, h) {
+      var startSize = 78;
+      var parentStyle =
+        "shape=mxgraph.upn.activity;swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;" +
+        "startSize=" +
+        startSize +
+        ";horizontalStack=0;" +
+        "resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;" +
+        "rounded=1;arcSize=4;html=1;whiteSpace=wrap;" +
+        "fillColor=#b0e3e6;strokeColor=#0e8088;swimlaneLine=1;swimlaneFillColor=none;" +
+        "treeFolding=1;treeMoving=1;";
 
-		// Helper to create an Activity Box cell hierarchy for a given variant
-		function createActivityBox(fillColor, strokeColor, variantVal, w, h)
-		{
-			var startSize = 26;
-			var parentStyle = 'shape=mxgraph.upn.activity;swimlane;fontStyle=0;align=center;verticalAlign=top;' +
-				'childLayout=stackLayout;horizontal=1;startSize=' + startSize + ';horizontalStack=0;' +
-				'resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;' +
-				'rounded=1;arcSize=10;html=1;whiteSpace=wrap;' +
-				'fillColor=' + fillColor + ';strokeColor=' + strokeColor + ';' +
-				'upnVariant=' + variantVal + ';';
+      var parent = new mxCell(
+        "WHAT happens<br>(start with verb in base form)",
+        new mxGeometry(0, 0, w, h),
+        parentStyle,
+      );
+      parent.vertex = true;
 
-			var parent = new mxCell('', new mxGeometry(0, 0, w, h), parentStyle);
-			parent.vertex = true;
+      // Resource row (with RASCI badges)
+      var whoRow = new mxCell(
+        "Resource Name",
+        new mxGeometry(0, 0, w, 24),
+        resourceRowStyle + "rasciR=1;rasciA=1;rasciS=1;rasciC=1;rasciI=1;",
+      );
+      whoRow.vertex = true;
+      parent.insert(whoRow);
 
-			// What section - activity description
-			var whatRow = new mxCell('WHAT happens (start with verb in base form)',
-				new mxGeometry(0, 0, w, 34), rowStyle + 'fontSize=12;');
-			whatRow.vertex = true;
-			parent.insert(whatRow);
+      // System name row (italic)
+      var sysRow = new mxCell(
+        "System Name",
+        new mxGeometry(0, 0, w, 24),
+        systemRowStyle,
+      );
+      sysRow.vertex = true;
+      parent.insert(sysRow);
 
-			// Divider between What and Who
-			var div1 = new mxCell('', new mxGeometry(0, 0, w, 8), dividerStyle);
-			div1.vertex = true;
-			parent.insert(div1);
+      return parent;
+    }
 
-			// Who section header
-			var whoHeader = new mxCell('WHO', new mxGeometry(0, 0, w, 20), sectionHeaderStyle + 'fontSize=10;fontColor=#888888;');
-			whoHeader.vertex = true;
-			parent.insert(whoHeader);
+    var fns = [];
 
-			// Who row - resource with RASCI badge
-			var whoResourceStyle = 'shape=mxgraph.upn.resource;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=24;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;rasciRole=R;';
-			var whoRow = new mxCell('Resource Name',
-				new mxGeometry(0, 0, w, 22), whoResourceStyle);
-			whoRow.vertex = true;
-			parent.insert(whoRow);
+    // Activity
+    fns.push(
+      sb.addEntry(dt + "activity", function () {
+        var w = 210;
+        var h = 126;
+        var cell = createActivityBox(w, h);
+        return sb.createVertexTemplateFromCells([cell], w, h, "Activity");
+      }),
+    );
 
-			// Divider between Who and System
-			var div2 = new mxCell('', new mxGeometry(0, 0, w, 8), dividerStyle);
-			div2.vertex = true;
-			parent.insert(div2);
+    // Resource Row (standalone, can be added as child of Activity Box)
+    fns.push(
+      sb.createVertexTemplateEntry(
+        "shape=mxgraph.upn.resource;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;spacingLeft=4;spacingRight=100;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;rasciR=1;rasciA=1;rasciS=1;rasciC=1;rasciI=1;",
+        210,
+        24,
+        "Resource Name",
+        "Resource Row",
+        null,
+        dt + "resource row who rasci role badge",
+      ),
+    );
 
-			// System section header
-			var sysHeader = new mxCell('SYSTEM', new mxGeometry(0, 0, w, 20), sectionHeaderStyle + 'fontSize=10;fontColor=#888888;');
-			sysHeader.vertex = true;
-			parent.insert(sysHeader);
+    // Flow Line
+    fns.push(
+      sb.createEdgeTemplateEntry(
+        "shape=mxgraph.upn.flowLine;endArrow=blockThin;endFill=1;html=1;fontSize=11;isTerminated=0;",
+        200,
+        0,
+        "WHY does it happen?",
+        "Flow Line",
+        null,
+        dt + "flow line arrow why handoff terminated",
+      ),
+    );
 
-			// System row
-			var sysRow = new mxCell('System Name',
-				new mxGeometry(0, 0, w, 22), rowStyle);
-			sysRow.vertex = true;
-			parent.insert(sysRow);
+    // Terminator Flow Line
+    fns.push(
+      sb.createEdgeTemplateEntry(
+        "shape=mxgraph.upn.flowLine;endArrow=blockThin;endFill=1;html=1;fontSize=11;isTerminated=1;",
+        200,
+        0,
+        "WHY Process ends here",
+        "Terminated Flow Line",
+        null,
+        dt + "flow line arrow terminated end stop",
+      ),
+    );
 
-			return parent;
-		}
+    this.addPalette(
+      "upn",
+      "UPN (Universal Process Notation)",
+      false,
+      mxUtils.bind(this, function (content) {
+        for (var i = 0; i < fns.length; i++) {
+          content.appendChild(fns[i](content));
+        }
+      }),
+    );
 
-		var fns = [];
+    this.setCurrentSearchEntryLibrary();
 
-		// Activity Box variants
-		for (var i = 0; i < variants.length; i++)
-		{
-			(function(variant)
-			{
-				fns.push(sb.addEntry(dt + 'activity box ' + variant[2].toLowerCase(), function()
-				{
-					var w = 220;
-					var h = 186;
-					var cell = createActivityBox(variant[0], variant[1], variant[3], w, h);
+    // Initialize UPN drill-down navigation
+    this.initUPNDrillDown();
+  };
 
-					return sb.createVertexTemplateFromCells([cell], w, h, 'Activity Box (' + variant[2] + ')');
-				}));
-			})(variants[i]);
-		}
+  /**
+   * Initializes UPN drill-down navigation:
+   * - Forces shape redraw when page links change on UPN activity cells
+   * - Adds double-click-to-navigate for drill-down into sub-processes
+   * - Provides breadcrumb trail and back button for navigation
+   */
+  Sidebar.prototype.initUPNDrillDown = function () {
+    var ui = this.editorUi;
+    var graph = ui.editor.graph;
+    var model = graph.getModel();
 
-		// Flow Line
-		fns.push(sb.createEdgeTemplateEntry('endArrow=blockThin;endFill=1;html=1;fontSize=11;',
-			200, 0, 'WHY does it happen?', 'Flow Line', null,
-			dt + 'flow line arrow why handoff'));
+    // === Navigation Stack ===
+    // Tracks pages visited via UPN drill-down for back navigation
+    var navStack = [];
 
-		this.addPalette('upn', 'UPN (Universal Process Notation)', false, mxUtils.bind(this, function(content)
-		{
-			for (var i = 0; i < fns.length; i++)
-			{
-				content.appendChild(fns[i](content));
-			}
-		}));
+    // === Helper: Check if a cell uses the UPN Activity shape ===
+    function isUPNActivity(cell) {
+      if (cell == null) return false;
 
-		this.setCurrentSearchEntryLibrary();
-	};
+      try {
+        var style = graph.getCellStyle(cell);
+        return (
+          style != null &&
+          style[mxConstants.STYLE_SHAPE] === "mxgraph.upn.activity"
+        );
+      } catch (e) {
+        return false;
+      }
+    }
 
+    // === Helper: Walk up the parent chain to find a UPN Activity ===
+    function findUPNActivityParent(cell) {
+      var current = cell;
+      var depth = 0;
+
+      while (current != null && depth < 10) {
+        if (isUPNActivity(current)) return current;
+
+        current = model.getParent(current);
+        depth++;
+      }
+
+      return null;
+    }
+
+    // === Helper: Get page link ID from a cell or its children ===
+    function getPageLinkId(cell) {
+      if (cell == null) return null;
+
+      // Check the cell itself
+      var link = graph.getLinkForCell(cell);
+
+      if (link != null && link.substring(0, 13) === "data:page/id,") {
+        return link.substring(13);
+      }
+
+      // Check child cells (link may be set on a child row)
+      var childCount = model.getChildCount(cell);
+
+      for (var i = 0; i < childCount; i++) {
+        var child = model.getChildAt(cell, i);
+        var childLink = graph.getLinkForCell(child);
+
+        if (
+          childLink != null &&
+          childLink.substring(0, 13) === "data:page/id,"
+        ) {
+          return childLink.substring(13);
+        }
+      }
+
+      return null;
+    }
+
+    // =========================================================================
+    // 1. SHAPE REFRESH: Force UPN shapes to redraw when links change
+    // =========================================================================
+    // The core issue: mxCellRenderer.isShapeInvalid only checks
+    // bounds/scale/points. When a link is added (value change), the shape
+    // geometry doesn't change, so the drill-down indicator is never painted.
+    // Fix: intercept graphModelChanged to clear shape.bounds on UPN cells
+    // whose values changed, forcing isShapeInvalid to return true.
+    var origGraphModelChanged = graph.graphModelChanged;
+
+    graph.graphModelChanged = function (changes) {
+      if (changes != null) {
+        for (var i = 0; i < changes.length; i++) {
+          var change = changes[i];
+
+          // Detect value changes (mxValueChange has .value and .previous)
+          if (
+            change != null &&
+            change.cell != null &&
+            "value" in change &&
+            "previous" in change
+          ) {
+            // Find the UPN Activity parent of the changed cell
+            var upnCell = findUPNActivityParent(change.cell);
+
+            if (upnCell != null) {
+              var state = graph.view.getState(upnCell);
+
+              if (state != null && state.shape != null) {
+                // Clear bounds to force isShapeInvalid → true → repaint
+                state.shape.bounds = null;
+              }
+            }
+          }
+        }
+      }
+
+      origGraphModelChanged.apply(this, arguments);
+    };
+
+    // =========================================================================
+    // 2. DOUBLE-CLICK DRILL-DOWN: Navigate to linked sub-process page
+    // =========================================================================
+    graph.addListener(mxEvent.DOUBLE_CLICK, function (sender, evt) {
+      if (evt.isConsumed()) return;
+
+      var cell = evt.getProperty("cell");
+
+      if (cell == null) return;
+
+      // Find the UPN activity parent of whatever was double-clicked
+      var upnCell = findUPNActivityParent(cell);
+
+      if (upnCell == null) return;
+
+      var pageId = getPageLinkId(upnCell);
+
+      if (pageId == null) return;
+
+      // Find the target page
+      var page = ui.getPageById(pageId);
+
+      if (page == null) return;
+
+      // Push current page onto navigation stack
+      navStack.push({
+        page: ui.currentPage,
+        pageId: ui.currentPage.getId(),
+        pageName: ui.currentPage.getName() || "Untitled",
+      });
+
+      // Navigate to the child process page
+      ui.selectPage(page);
+
+      // Update the breadcrumb trail
+      updateBreadcrumb();
+
+      // Prevent default double-click behavior (text editing)
+      evt.consume();
+    });
+
+    // =========================================================================
+    // 3. BREADCRUMB TRAIL: Visual navigation bar for process hierarchy
+    // =========================================================================
+    var breadcrumbContainer = null;
+
+    function ensureBreadcrumbContainer() {
+      if (breadcrumbContainer != null) return;
+
+      breadcrumbContainer = document.createElement("div");
+      breadcrumbContainer.className = "upn-drill-breadcrumb";
+      breadcrumbContainer.style.cssText =
+        "position:absolute;top:8px;left:50%;transform:translateX(-50%);" +
+        "z-index:100;background:rgba(30,40,60,0.92);color:#fff;" +
+        "padding:5px 14px;border-radius:6px;font-size:13px;" +
+        "display:none;align-items:center;gap:4px;" +
+        "box-shadow:0 2px 8px rgba(0,0,0,0.25);font-family:Arial,Helvetica,sans-serif;" +
+        "pointer-events:auto;user-select:none;white-space:nowrap;" +
+        "max-width:80%;overflow-x:auto;";
+
+      // Insert into the editor container, above the graph
+      var container = graph.container;
+
+      if (container != null && container.parentNode != null) {
+        container.parentNode.style.position =
+          container.parentNode.style.position || "relative";
+        container.parentNode.appendChild(breadcrumbContainer);
+      }
+    }
+
+    function updateBreadcrumb() {
+      ensureBreadcrumbContainer();
+
+      if (navStack.length === 0) {
+        breadcrumbContainer.style.display = "none";
+        return;
+      }
+
+      breadcrumbContainer.style.display = "flex";
+      breadcrumbContainer.innerHTML = "";
+
+      // Back button
+      var backBtn = document.createElement("span");
+      backBtn.innerHTML = "&#x2190;"; // ← arrow
+      backBtn.style.cssText =
+        "cursor:pointer;font-size:16px;margin-right:6px;opacity:0.85;" +
+        "padding:0 4px;border-radius:3px;";
+      backBtn.title = "Back to parent process";
+
+      backBtn.addEventListener("mouseover", function () {
+        this.style.background = "rgba(255,255,255,0.15)";
+      });
+
+      backBtn.addEventListener("mouseout", function () {
+        this.style.background = "none";
+      });
+
+      backBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        navigateBack();
+      });
+
+      breadcrumbContainer.appendChild(backBtn);
+
+      // Breadcrumb items for each level in the stack
+      for (var i = 0; i < navStack.length; i++) {
+        (function (index) {
+          var entry = navStack[index];
+
+          var link = document.createElement("span");
+          link.textContent = entry.pageName;
+          link.style.cssText =
+            "cursor:pointer;opacity:0.75;padding:1px 4px;border-radius:3px;";
+          link.title = "Navigate to: " + entry.pageName;
+
+          link.addEventListener("mouseover", function () {
+            this.style.opacity = "1";
+            this.style.background = "rgba(255,255,255,0.12)";
+          });
+
+          link.addEventListener("mouseout", function () {
+            this.style.opacity = "0.75";
+            this.style.background = "none";
+          });
+
+          link.addEventListener("click", function (e) {
+            e.stopPropagation();
+            navigateToLevel(index);
+          });
+
+          breadcrumbContainer.appendChild(link);
+
+          // Separator
+          var sep = document.createElement("span");
+          sep.textContent = " \u203A "; // › character
+          sep.style.cssText = "opacity:0.4;font-size:14px;";
+          breadcrumbContainer.appendChild(sep);
+        })(i);
+      }
+
+      // Current page name (not clickable)
+      var currentLabel = document.createElement("span");
+      currentLabel.textContent = ui.currentPage.getName() || "Current Process";
+      currentLabel.style.cssText = "font-weight:bold;opacity:1;";
+      breadcrumbContainer.appendChild(currentLabel);
+    }
+
+    function navigateBack() {
+      if (navStack.length > 0) {
+        var entry = navStack.pop();
+
+        // Find the page (it may have been renamed/moved)
+        var page = ui.getPageById(entry.pageId) || entry.page;
+
+        if (page != null) {
+          ui.selectPage(page);
+        }
+
+        updateBreadcrumb();
+      }
+    }
+
+    function navigateToLevel(index) {
+      if (index >= 0 && index < navStack.length) {
+        var entry = navStack[index];
+
+        // Remove everything from this index onwards
+        navStack.splice(index);
+
+        var page = ui.getPageById(entry.pageId) || entry.page;
+
+        if (page != null) {
+          ui.selectPage(page);
+        }
+
+        updateBreadcrumb();
+      }
+    }
+
+    // =========================================================================
+    // 4. CLEAR NAV STACK on manual page changes (tab clicks)
+    // =========================================================================
+    // When the user manually switches pages via the page tabs (not via
+    // drill-down), reset the navigation stack to avoid confusion.
+    ui.editor.addListener("pageSelected", function () {
+      // Only clear if the page change wasn't triggered by our drill-down
+      // We detect this by checking if the current page matches what
+      // the stack expects (top of stack + 1 child)
+      if (navStack.length > 0) {
+        var expectedParent = navStack[navStack.length - 1];
+        // If user navigates to a page that isn't the expected child,
+        // and isn't in the nav stack, reset the trail
+        var isInStack = false;
+
+        for (var i = 0; i < navStack.length; i++) {
+          if (navStack[i].pageId === ui.currentPage.getId()) {
+            isInStack = true;
+            break;
+          }
+        }
+
+        // Keep the breadcrumb visible so users can navigate back
+        updateBreadcrumb();
+      }
+    });
+
+    // =========================================================================
+    // 5. KEYBOARD SHORTCUT: Escape to go back up
+    // =========================================================================
+    mxEvent.addListener(document, "keydown", function (e) {
+      // Alt+Up arrow or Backspace (when not editing) to go back
+      if (
+        navStack.length > 0 &&
+        !graph.isEditing() &&
+        ((e.altKey && e.keyCode === 38) ||
+          (e.keyCode === 8 && document.activeElement === document.body))
+      ) {
+        navigateBack();
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    });
+  };
 })();
