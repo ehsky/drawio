@@ -79,3 +79,84 @@ mxShapeUPNActivity.prototype.paintForeground = function(c, x, y, w, h)
 };
 
 mxCellRenderer.registerShape(mxShapeUPNActivity.prototype.cst.ACTIVITY, mxShapeUPNActivity);
+
+//**********************************************************************************************************************************************************
+// UPN Resource Row (WHO section) with RASCI badge
+//**********************************************************************************************************************************************************
+/**
+ * Extends mxShape.
+ */
+function mxShapeUPNResource(bounds, fill, stroke, strokewidth)
+{
+	mxShape.call(this);
+	this.bounds = bounds;
+	this.fill = fill;
+	this.stroke = stroke;
+	this.strokewidth = (strokewidth != null) ? strokewidth : 1;
+};
+
+/**
+ * Extends mxRectangleShape.
+ */
+mxUtils.extend(mxShapeUPNResource, mxRectangleShape);
+
+mxShapeUPNResource.prototype.cst = {RESOURCE : 'mxgraph.upn.resource'};
+
+mxShapeUPNResource.prototype.customProperties = [
+	{name: 'rasciRole', dispName: 'RASCI Role', defVal: 'none', type: 'enum',
+		enumList: [{val: 'none', dispName: 'None'},
+				   {val: 'R', dispName: 'Responsible'},
+				   {val: 'A', dispName: 'Accountable'},
+				   {val: 'S', dispName: 'Supportive'},
+				   {val: 'C', dispName: 'Consulted'},
+				   {val: 'I', dispName: 'Informed'}]}
+];
+
+// RASCI badge colors: [background, text]
+mxShapeUPNResource.prototype.rasciColors = {
+	'R': ['#f8cecc', '#000000'],
+	'A': ['#ffe0b2', '#000000'],
+	'S': ['#d5e8d4', '#000000'],
+	'C': ['#fff9c4', '#000000'],
+	'I': ['#b3e5fc', '#000000']
+};
+
+/**
+ * Function: paintForeground
+ *
+ * Paints the RASCI role badge on the left side of the resource row.
+ */
+mxShapeUPNResource.prototype.paintForeground = function(c, x, y, w, h)
+{
+	mxRectangleShape.prototype.paintForeground.apply(this, arguments);
+
+	var role = mxUtils.getValue(this.style, 'rasciRole', 'none');
+
+	if (role !== 'none' && this.rasciColors[role] != null)
+	{
+		var colors = this.rasciColors[role];
+		var badgeSize = 14;
+		var badgeX = 6;
+		var badgeY = (h - badgeSize) / 2;
+
+		c.translate(x, y);
+
+		// Draw badge background
+		c.setStrokeColor('none');
+		c.setFillColor(colors[0]);
+		c.roundrect(badgeX, badgeY, badgeSize, badgeSize, 2, 2);
+		c.fill();
+
+		// Draw badge letter
+		c.setFontColor(colors[1]);
+		c.setFontSize(10);
+		c.setFontStyle(mxConstants.FONT_BOLD);
+		c.text(badgeX + badgeSize / 2, badgeY + badgeSize / 2,
+			0, 0, role, mxConstants.ALIGN_CENTER, mxConstants.ALIGN_MIDDLE,
+			0, null, 0, 0, 0);
+
+		c.translate(-x, -y);
+	}
+};
+
+mxCellRenderer.registerShape(mxShapeUPNResource.prototype.cst.RESOURCE, mxShapeUPNResource);

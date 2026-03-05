@@ -54,9 +54,10 @@
 			whoHeader.vertex = true;
 			parent.insert(whoHeader);
 
-			// Who row - resource with RACI
-			var whoRow = new mxCell('Resource [R]',
-				new mxGeometry(0, 0, w, 22), rowStyle);
+			// Who row - resource with RASCI badge
+			var whoResourceStyle = 'shape=mxgraph.upn.resource;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=24;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;rasciRole=R;';
+			var whoRow = new mxCell('Resource Name',
+				new mxGeometry(0, 0, w, 22), whoResourceStyle);
 			whoRow.vertex = true;
 			parent.insert(whoRow);
 
