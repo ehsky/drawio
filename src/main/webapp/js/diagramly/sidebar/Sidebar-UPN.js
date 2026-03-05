@@ -58,13 +58,29 @@
 
     var fns = [];
 
-    // Activity
+    // WHAT Activity with connected Flow Line
     fns.push(
-      sb.addEntry(dt + "activity", function () {
+      sb.addEntry(dt + "what activity", function () {
         var w = 210;
         var h = 126;
-        var cell = createActivityBox(w, h);
-        return sb.createVertexTemplateFromCells([cell], w, h, "Activity");
+        var activity = createActivityBox(w, h);
+
+        var edge = new mxCell(
+          "WHY does it happen?",
+          new mxGeometry(0, 0, 0, 0),
+          "shape=mxgraph.upn.flowLine;endArrow=blockThin;endFill=1;html=1;fontSize=11;isTerminated=0;",
+        );
+        edge.geometry.setTerminalPoint(new mxPoint(w, h / 2), true);
+        edge.geometry.setTerminalPoint(new mxPoint(w + 160, h / 2), false);
+        edge.geometry.relative = true;
+        edge.edge = true;
+
+        return sb.createVertexTemplateFromCells(
+          [activity, edge],
+          w + 160,
+          h,
+          "WHAT Activity",
+        );
       }),
     );
 
@@ -81,29 +97,16 @@
       ),
     );
 
-    // Flow Line
+    // WHY Handoff
     fns.push(
       sb.createEdgeTemplateEntry(
         "shape=mxgraph.upn.flowLine;endArrow=blockThin;endFill=1;html=1;fontSize=11;isTerminated=0;",
         200,
         0,
         "WHY does it happen?",
-        "Flow Line",
+        "WHY Handoff",
         null,
-        dt + "flow line arrow why handoff terminated",
-      ),
-    );
-
-    // Terminator Flow Line
-    fns.push(
-      sb.createEdgeTemplateEntry(
-        "shape=mxgraph.upn.flowLine;endArrow=blockThin;endFill=1;html=1;fontSize=11;isTerminated=1;",
-        200,
-        0,
-        "WHY Process ends here",
-        "Terminated Flow Line",
-        null,
-        dt + "flow line arrow terminated end stop",
+        dt + "why handoff flow line arrow",
       ),
     );
 
